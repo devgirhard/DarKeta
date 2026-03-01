@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOD ZONE — Canal Oficial</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff41;
+    --cyan: #00eaff;
+    --pink: #ff2d78;
+    --dark: #010a01;
+    --darker: #000500;
+    --glow-green: 0 0 10px #00ff41, 0 0 30px #00ff4155, 0 0 60px #00ff4122;
+    --glow-cyan: 0 0 10px #00eaff, 0 0 30px #00eaff55;
+    --glow-pink: 0 0 10px #ff2d78, 0 0 30px #ff2d7855;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--darker);
+    min-height: 100vh;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--green);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Matrix rain canvas */
+  canvas#matrix {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Scanlines */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.18) 3px,
+      rgba(0,0,0,0.18) 4px
+    );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 40px 24px;
+    max-width: 480px;
+    width: 100%;
+  }
+
+  /* Top badge */
+  .badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--pink);
+    text-shadow: var(--glow-pink);
+    animation: blink 2s step-end infinite;
+    text-transform: uppercase;
+  }
+  @keyframes blink {
+    50% { opacity: 0.4; }
+  }
+
+  /* Logo */
+  .logo-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .logo-icon {
+    width: 100px;
+    height: 100px;
+    position: relative;
+  }
+  .logo-icon svg {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 0 16px var(--cyan)) drop-shadow(0 0 40px #00eaff55);
+    animation: rotateLogo 8s linear infinite;
+  }
+  @keyframes rotateLogo {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .logo-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: rotateLogo 8s linear infinite reverse;
+  }
+  .logo-center span {
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(26px, 8vw, 42px);
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+    text-transform: uppercase;
+    text-align: center;
+    animation: glitch 6s infinite;
+    position: relative;
+  }
+  .title::before, .title::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+  }
+  .title::before {
+    color: var(--pink);
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+    transform: translateX(-3px);
+    animation: glitchTop 4s infinite;
+    text-shadow: var(--glow-pink);
+  }
+  .title::after {
+    color: var(--green);
+    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    transform: translateX(3px);
+    animation: glitchBot 4s infinite 0.2s;
+    text-shadow: var(--glow-green);
+  }
+  @keyframes glitch {
+    0%,90%,100% { transform: none; }
+    92% { transform: skewX(-2deg) translateX(2px); }
+    94% { transform: skewX(2deg) translateX(-2px); }
+    96% { transform: none; }
+  }
+  @keyframes glitchTop {
+    0%,90%,100% { opacity: 0; }
+    92%,94% { opacity: 1; }
+  }
+  @keyframes glitchBot {
+    0%,88%,100% { opacity: 0; }
+    90%,93% { opacity: 1; }
+  }
+
+  .subtitle {
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--green);
+    text-shadow: var(--glow-green);
+    text-align: center;
+    opacity: 0.85;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 24px;
+    border: 1px solid #00ff4133;
+    padding: 12px 28px;
+    background: #00ff410a;
+    backdrop-filter: blur(4px);
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+  }
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #00ff4188;
+    text-transform: uppercase;
+  }
+
+  /* Terminal box */
+  .terminal {
+    width: 100%;
+    border: 1px solid #00eaff33;
+    background: #00eaff06;
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: #00eaff99;
+  }
+  .terminal .line { display: block; }
+  .terminal .line::before { content: '> '; color: var(--green); }
+  .terminal .highlight { color: var(--pink); text-shadow: var(--glow-pink); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--green);
+    animation: blink 0.8s step-end infinite;
+    vertical-align: -2px;
+    margin-left: 2px;
+  }
+
+  /* Main CTA button */
+  .btn-wrap {
+    width: 100%;
+    position: relative;
+  }
+  .btn-corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: var(--green);
+    border-style: solid;
+  }
+  .btn-corner.tl { top: -4px; left: -4px; border-width: 2px 0 0 2px; }
+  .btn-corner.tr { top: -4px; right: -4px; border-width: 2px 2px 0 0; }
+  .btn-corner.bl { bottom: -4px; left: -4px; border-width: 0 0 2px 2px; }
+  .btn-corner.br { bottom: -4px; right: -4px; border-width: 0 2px 2px 0; }
+
+  .btn-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    padding: 20px 32px;
+    background: linear-gradient(135deg, #00ff410d, #00eaff0d);
+    border: 2px solid var(--green);
+    color: var(--green);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    text-shadow: var(--glow-green);
+    box-shadow: var(--glow-green), inset 0 0 30px #00ff410a;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-main::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -60%;
+    width: 40%;
+    height: 300%;
+    background: linear-gradient(to right, transparent, #00ff4122, transparent);
+    transform: skewX(-20deg);
+    animation: sweep 3s ease-in-out infinite;
+  }
+  @keyframes sweep {
+    0% { left: -60%; }
+    100% { left: 160%; }
+  }
+  .btn-main:hover {
+    background: linear-gradient(135deg, #00ff4122, #00eaff11);
+    box-shadow: 0 0 20px #00ff41, 0 0 60px #00ff4155, inset 0 0 40px #00ff410a;
+    transform: scale(1.03);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+  }
+  .btn-main:active { transform: scale(0.98); }
+
+  .whatsapp-icon {
+    width: 28px; height: 28px;
+    flex-shrink: 0;
+  }
+
+  /* Tags */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .tag.g { border-color: #00ff4155; color: #00ff4188; }
+  .tag.c { border-color: #00eaff55; color: #00eaff88; }
+  .tag.p { border-color: #ff2d7855; color: #ff2d7888; }
+
+  /* Footer */
+  .footer {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #00ff4144;
+    text-align: center;
+    animation: blink 4s step-end infinite;
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--green);
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    from { transform: translateY(100vh) translateX(0); opacity: 1; }
+    to { transform: translateY(-100px) translateX(var(--dx)); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+  <div class="badge">⚡ SISTEMA ONLINE ⚡</div>
+
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" stroke="#00eaff" stroke-width="2" fill="none"/>
+        <polygon points="50,15 85,32.5 85,67.5 50,85 15,67.5 15,32.5" stroke="#00ff41" stroke-width="1" fill="none" stroke-dasharray="4 4"/>
+        <polygon points="50,25 75,37.5 75,62.5 50,75 25,62.5 25,37.5" stroke="#ff2d78" stroke-width="1.5" fill="none"/>
+      </svg>
+      <div class="logo-center"><span>⚔️</span></div>
+    </div>
+  </div>
+
+  <div class="title" data-text="MOD ZONE">MOD ZONE</div>
+  <div class="subtitle">// DARKETA MODS //</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val">∞</div>
+      <div class="stat-label">Mods</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">24/7</div>
+      <div class="stat-label">Online</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">FREE</div>
+      <div class="stat-label">Acesso</div>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <span class="line">Conectando ao servidor<span class="highlight">...</span></span>
+    <span class="line">Verificando acesso<span class="highlight"> [OK]</span></span>
+    <span class="line">Carregando mods<span class="highlight"> DESBLOQUEADOS</span></span>
+    <span class="line">Canal pronto<span class="highlight"> ► ENTRAR AGORA</span><span class="cursor"></span></span>
+  </div>
+
+  <div class="btn-wrap">
+    <div class="btn-corner tl"></div>
+    <div class="btn-corner tr"></div>
+    <div class="btn-corner bl"></div>
+    <div class="btn-corner br"></div>
+    <a class="btn-main" href="https://whatsapp.com/channel/0029Vb7Znx77IUYQEtVqH62O" target="_blank">
+      <svg class="whatsapp-icon" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M16 2C8.268 2 2 8.268 2 16c0 2.52.687 4.876 1.884 6.895L2 30l7.316-1.86A13.93 13.93 0 0016 30c7.732 0 14-6.268 14-14S23.732 2 16 2zm0 25.6a11.53 11.53 0 01-5.88-1.605l-.42-.25-4.34 1.107 1.13-4.225-.274-.434A11.565 11.565 0 014.4 16C4.4 9.595 9.595 4.4 16 4.4S27.6 9.595 27.6 16 22.405 27.6 16 27.6zm6.35-8.65c-.348-.174-2.062-1.017-2.381-1.134-.32-.116-.552-.174-.784.174-.232.348-.9 1.134-1.103 1.367-.203.232-.406.261-.754.087-.348-.174-1.47-.542-2.799-1.727-1.034-.923-1.732-2.062-1.935-2.41-.203-.348-.022-.536.152-.71.157-.156.348-.406.522-.61.174-.203.232-.348.348-.58.116-.232.058-.435-.029-.61-.087-.174-.784-1.89-1.074-2.589-.283-.68-.57-.587-.784-.598l-.668-.012c-.232 0-.61.087-.928.435s-1.218 1.19-1.218 2.903 1.247 3.367 1.421 3.599c.174.232 2.455 3.748 5.95 5.258.832.36 1.482.574 1.988.735.835.266 1.596.228 2.197.138.67-.1 2.062-.844 2.353-1.66.29-.814.29-1.512.203-1.66-.087-.145-.319-.232-.667-.406z"/>
+      </svg>
+      ENTRAR NO CANAL
+    </a>
+  </div>
+
+  <div class="tags">
+    <span class="tag g"># Anime</span>
+    <span class="tag c"># Mods</span>
+    <span class="tag p"># Hacks</span>
+    <span class="tag g"># Cheats</span>
+    <span class="tag c"># Free</span>
+    <span class="tag p"># WhatsApp</span>
+  </div>
+
+  <div class="footer">[ ACESSO LIBERADO — SEM VÍRUS — 100% FREE ]</div>
+</div>
+
+<script>
+// Matrix rain
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン01';
+const fontSize = 14;
+let drops = [];
+function initDrops() {
+  const cols = Math.floor(canvas.width / fontSize);
+  drops = Array(cols).fill(1);
+}
+initDrops();
+window.addEventListener('resize', initDrops);
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0,5,0,0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = fontSize + 'px monospace';
+  drops.forEach((y, i) => {
+    const c = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillStyle = i % 5 === 0 ? '#00eaff' : '#00ff41';
+    ctx.fillText(c, i * fontSize, y * fontSize);
+    if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  });
+}
+setInterval(drawMatrix, 50);
+
+// Particles
+const pContainer = document.getElementById('particles');
+for (let i = 0; i < 25; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const duration = 6 + Math.random() * 10;
+  const dx = (Math.random() - 0.5) * 200;
+  p.style.cssText = `
+    left: ${Math.random() * 100}%;
+    bottom: -10px;
+    animation-duration: ${duration}s;
+    animation-delay: ${Math.random() * duration}s;
+    --dx: ${dx}px;
+    background: ${Math.random() > 0.5 ? '#00ff41' : '#00eaff'};
+    box-shadow: 0 0 6px ${Math.random() > 0.5 ? '#00ff41' : '#00eaff'};
+    opacity: ${0.4 + Math.random() * 0.6};
+  `;
+  pContainer.appendChild(p);
+}
+
+// Auto redirect after 8 seconds
+setTimeout(() => {
+  window.open('https://whatsapp.com/channel/0029Vb7Znx77IUYQEtVqH62O', '_blank');
+}, 8000);
+</script>
+</body>
+</html>
